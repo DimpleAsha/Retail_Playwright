@@ -7,6 +7,7 @@ export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
   
+  
   // Clean boolean check to avoid type mixing evaluation bugs
   workers: process.env.CI ? '100%' : 4,
   retries: process.env.CI ? 2 : 0,
