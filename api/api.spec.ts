@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('Authenticated API Chaining: Retail Workflow', async ({ request }) => {
+test('Authenticated API Chaining: Amazon Retail Workflow', async ({ request }) => {
   // 1. AUTH & CREATE (POST)
   const auth = {
     username: process.env.API_USER!,
@@ -29,7 +29,7 @@ test('Authenticated API Chaining: Retail Workflow', async ({ request }) => {
   });
   expect(getRes.ok()).toBeTruthy();
 
-  // 3. UPDATE (PUT)
+  // 3. UPDATE (PUT)- the quantity to 2
   await request.put(`${instanceUrl}/cart/${cartId}`, {
     headers: { 'Authorization': `Bearer ${token}` },
     data: { quantity: 2 }
