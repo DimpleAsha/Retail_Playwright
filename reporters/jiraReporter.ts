@@ -1,27 +1,31 @@
 import { Reporter, TestCase, TestResult } from '@playwright/test/reporter';
-import { Buffer } from 'buffer';
-import process from 'process';
+import axios from 'axios';
 
 export default class JiraReporter implements Reporter {
   async onTestEnd(test: TestCase, result: TestResult) {
     if (result.status === 'failed' && process.env.JIRA_URL) {
-      const username = process.env.JIRA_USERNAME ?? '';
-      const token = process.env.JIRA_TOKEN ?? '';
-      const authorization = `Basic ${Buffer.from(`${username}:${token}`).toString('base64')}`;
-
-      await fetch(`${process.env.JIRA_URL}/issue`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: authorization,
-        },
-        body: JSON.stringify({
-          fields: {
-            summary: `Fail: ${test.title}`,
-            description: result.error?.message,
+      try {
+        await axios.post(
+          `${process.env.JIRA_URL}/issue`,
+          {
+            fields: {
+              project: { key: process.env.JIRA_PROJECT_KEY },
+              summary: `[Automation Failure] ${test.title}`,
+              description: `Test failed at: ${new Date().toISOString()}\nError: ${result.error?.message}`,
+              issuetype: { name: 'Bug' },
+            },
           },
-        }),
-      });
+          {
+            auth: {
+              username: process.env.JIRA_USERNAME!,
+              password: process.env.JIRA_TOKEN!,
+            },
+          }
+        );
+      } catch (error: any) {
+        console.error('Jira API Error:', error.response?.data?.errors || error.message);
+      }
     }
   }
 }
+
